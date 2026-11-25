@@ -1,0 +1,36 @@
+# mrepo
+
+Checks the integrity of a package's mrepo side: its structure, its protocols, what it carries.
+
+## Signature
+
+- `checkStructure(pkg)`: its `mrepo/` part; among it, that its list of
+  packages ends with the package itself (the last package of a list
+  defines the mrepo), and that its hooks are in their place,
+  `runtime/hooks/<transition>.haicc`, a file a transition, each line a
+  command; and that every name it lays in is a URI's name, and then
+  data, or hidden, a name starting with a dot, and then one of those
+  there are (`mycelium-uri`, `HIDDEN`): the hidden-name rule, enforced. And
+  that a layer that streams (`inbox`, `outbox`, `request/done`)
+  declares its structure in its `.layer.json`: explicit, always; one
+  that declares none is a folder.
+- `checkProtocol(pkg)`: its `protocol.js`, imported; asynchronous. Among
+  it, that every action is a documented method: the function mounted is
+  the one `external/<action>/` of a carried module exports, its README
+  with `Signature`, `Returns`, `Errors`, and `Arguments` where the config
+  names any.
+- `checkCarried(pkg)`: its `package.json` and `modules/third-party.json`
+  against what is there.
+
+`pkg` is the package's folder.
+
+## Returns
+
+`[{ check, detail }]`: `check` is `structure`, `protocol` or `carried`;
+none expected.
+
+## Also exported
+
+- `leaves(root)`: the leaves of a structure, each folder holding a
+  `.layer.json`, by its path.
+- `contributions(root)`: the files it adds to layers it does not define.

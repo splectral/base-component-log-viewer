@@ -1,0 +1,2 @@
+# stop: run as the service closes its door: its program ended
+runtime/stop . splectral/packages/splectral/base-component-log-viewer

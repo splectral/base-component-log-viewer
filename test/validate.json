@@ -1,0 +1,11 @@
+{
+  "description": "The component on its own, in a floating instance: its list, its hooks and its bundle, its program over its boxes, and its info, its code, its mrepo side and its structure check without problems.",
+  "tests": [
+    "configured",
+    "program",
+    "info",
+    "code",
+    "mrepo",
+    "package"
+  ]
+}

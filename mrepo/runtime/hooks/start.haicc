@@ -1,0 +1,2 @@
+# start: run as the service opens its door: its program started beside the mrepo
+runtime/start . splectral/packages/splectral/base-component-log-viewer

@@ -1,0 +1,20 @@
+{
+  "name": "base-component-log-viewer",
+  "description": "Component: the log viewer, on Splectral: one page that shows a swarm's logs as its master holds them, every node's in one view, filtered by node.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "main.js",
+  "modules": [
+    "pear-full-square/splectral-base-log-viewer",
+    "pear-full-square/mrepo-base-info",
+    "pear-full-square/pkgm-base-check"
+  ],
+  "template": {
+    "repository": "haiccing/base-docs-package",
+    "commit": "d6d99cffc82361d9c15ae86fd723045537ba63b3"
+  },
+  "scripts": {
+    "test": "bare test/run.js"
+  }
+}

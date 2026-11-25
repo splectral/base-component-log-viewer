@@ -1,0 +1,7 @@
+{
+  "mode": "replicated",
+  "description": "The packages the log viewer is made of: itself only, its program and its page in it. Laid on top of an mrepo Splectral deployed (splectral/install), on its Splectral side: not haiccing's.",
+  "packages": [
+    "splectral/base-component-log-viewer"
+  ]
+}
