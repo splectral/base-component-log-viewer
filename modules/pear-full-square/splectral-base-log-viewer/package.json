@@ -1,7 +1,7 @@
 {
   "name": "splectral-base-log-viewer",
   "version": "0.1.0",
-  "description": "Module: the log viewer, a Splectral component: one page that shows a swarm's logs as its master holds them, every node's in one view, filtered by node.",
+  "description": "Module: the log viewer, a Splectral component: one page that shows the request log of any mrepo of the install.",
   "type": "module",
   "main": "index.js",
   "scripts": {

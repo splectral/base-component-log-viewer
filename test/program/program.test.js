@@ -1,7 +1,7 @@
 // The package's program, run.js, as its start hook starts it
 // (runtime/start: --dir, --runtime, --state), against the component's
 // Splectral side made here, its record. A page asked through its inbox,
-// its data (the master's log/read) answered as the server answers it,
+// its data (the mrepo's request log, read) answered as the server answers it,
 // the page read from its outbox; then ended with its runtime. No mrepo is built.
 import test from '../../modules/node_modules/brittle/index.js'
 import os from '../../modules/node_modules/bare-os/index.js'
@@ -31,10 +31,10 @@ test('the program: its page made over its Splectral boxes; its state; ended with
     t.ok(await until(() => existsSync(state)), 'its state written once it follows its inbox')
     t.is(JSON.parse(readFileSync(state, 'utf8')).component, 'splectral/base-component-log-viewer', 'the component it runs for')
     const key = '11111111-1111-4111-8111-111111111111'
-    put(join(side, 'inbox'), key, envelope(key, { request: 'page', path: '', query: { node: 'swarm-1/node-1' } }))
+    put(join(side, 'inbox'), key, envelope(key, { request: 'page', path: '', query: { at: 'host' } }))
     // the server, as far as the test goes: what the page asks for in the outbox, answered in the inbox
     const asked = []
-    const NODES = [{ uri: 'swarm-1/master', length: 3 }, { uri: 'swarm-1/node-1', length: 1 }]
+    const DONE = { topic: '/request/done', offset: 1795400000000, timestamp: '2026-11-22T21:33:20.007Z', value: { topic: '/haicc/terminal', offset: 1795400000000, timestamp: '2026-11-22T21:33:20.000Z', value: { protocol: 'crud', action: 'read', uri: ['main', '.'], output: [] } } }
     const answer = () => {
       for (const name of readdirSync(join(side, 'outbox'))) {
         const r = JSON.parse(readFileSync(join(side, 'outbox', name), 'utf8'))
@@ -42,17 +42,17 @@ test('the program: its page made over its Splectral boxes; its state; ended with
         if (form.request === 'page') continue
         rmSync(join(side, 'outbox', name))
         asked.push(form)
-        const output = form.command.length === 3 ? { nodes: NODES, records: [] } : { nodes: [NODES[1]], records: [{ node: 'swarm-1/node-1', offset: 0, timestamp: '2026-11-21T00:00:02.000Z', request: 'k', command: 'crud/read .', ok: true, error: null, ms: 7 }] }
+        const output = form.command[0] === 'haicc/mrepos' ? [{ uri: 'local/host', position: 'host', package: 'haiccing/base-component-haicc', running: true }] : [{ uri: ['request', 'done/*[@offset=1795400000000]'], value: DONE }]
         put(join(side, 'inbox'), r.key, envelope(r.key, { ...form, output }))
       }
       return asked.length >= 2
     }
     t.ok(await until(answer), 'its data asked in its outbox')
-    t.alike(asked.map(f => [f.request, f.at, ...f.command].join(' ')).sort(), ['data host/swarms/swarm-1/master log/read . 1', 'data host/swarms/swarm-1/master log/read . swarm-1/node-1 100'], 'the master\'s log/read, a command at its position: the node\'s records, and the nodes there are')
+    t.alike(asked.map(f => [f.request, f.at, ...f.command].join(' ')).sort(), ['data . haicc/mrepos', 'data host crud/read done/* --flags layer=request'], 'the mrepo\'s request log, a command at its position; the install\'s mrepos beside it')
     t.ok(await until(() => existsSync(join(side, 'outbox', `${key}.json`))), 'the page answered')
     const html = JSON.parse(readFileSync(join(side, 'outbox', `${key}.json`), 'utf8')).value.value.output
-    t.ok(html.includes('<td>swarm-1/node-1</td><td class="cmd">crud/read .</td><td class="ms">7</td>'), 'the records drawn')
-    t.ok(html.includes('<footer>haicc host/swarms/swarm-1/master log/read . swarm-1/node-1 100</footer>'), 'with the command it shows')
+    t.ok(html.includes('<td>/haicc/terminal</td><td class="cmd">crud/read .</td><td class="ms">7</td>'), 'the records drawn')
+    t.ok(html.includes('<footer>haicc host crud/read &quot;done/*&quot; --flags layer=request</footer>'), 'with the command it shows')
     runtime.kill()
     t.ok(await until(() => !alive(p.pid)), 'ended with its runtime')
     t.absent(existsSync(state), 'its state removed')

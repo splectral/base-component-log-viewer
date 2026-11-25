@@ -1,6 +1,6 @@
 {
   "name": "base-component-log-viewer",
-  "description": "Component: the log viewer, on Splectral: one page that shows a swarm's logs as its master holds them, every node's in one view, filtered by node.",
+  "description": "Component: the log viewer, on Splectral: one page that shows an mrepo's requests, its own request log, for any mrepo of the install.",
   "private": true,
   "license": "MIT",
   "type": "module",

@@ -6,5 +6,6 @@ The tests of splectral-base-log-viewer, a section per file, each test by its nam
 
 ## `log-viewer.test.js`
 
-- draw: a whole page: the node filter, the master's position, the records a table, one that failed marked; everything escaped
-- page: the master's log/read drawn: every node by default, the newest first; filtered by node; another master; a limit
+- rowOf: a request's record a row: when it was completed, how long, who asked, its command, its error
+- draw: a whole page: the mrepo chosen, the filter, the records a table, one that failed marked; everything escaped
+- page: an mrepo's request log read and drawn: the root by default, the latest first as it is read; another mrepo; a filter

@@ -1,52 +1,67 @@
-// page: the log page: a swarm's logs as its master holds them, `haicc
-// <master> log/read . [<node>] <limit>` drawn: every node's in one view,
-// or one node's (README.md beside it).
+// page: the log page: an mrepo's requests, its own request log read
+// (`haicc <mrepo> crud/read "done/*" --flags layer=request`) and drawn:
+// any mrepo of the install, chosen from its registry (README.md beside it).
 import { draw } from '../draw/index.js'
 
-// The master read when none is asked for: the first swarm's of a host.
-export const DEFAULT = 'host/swarms/swarm-1/master'
-// The records shown when no number is asked for.
-export const LIMIT = 100
-// A position from the root: names.
-const AT = /^[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)*$/
-// A node's unique URI.
-const NODE = /^[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)+$/
+// The mrepo read when none is asked for: the root.
+export const DEFAULT = '.'
+// An mrepo's position from the root: the root itself, or names.
+const AT = /^(\.|[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)*)$/
+// A filter on the records: XPath filters, as written after `done/*`.
+const FILTER = /^(\[[^\]]+\])+$/
 
-// form: { query: { at, node, limit } }: the master's position from the
-// root, a node to filter by, how many records. Its links relative to its
-// section: right wherever it is mounted.
+// A request's record in request/done, a row: when it was completed, how
+// long it took, who asked, the command, whether it failed and why.
+// record: { offset, timestamp, value: { topic, timestamp, value: form } }
+export function rowOf (record) {
+  const core = record?.value
+  const form = core?.value
+  if (!form || typeof form !== 'object' || Array.isArray(form)) return null
+  const ms = Date.parse(record.timestamp) - Date.parse(core.timestamp)
+  const uri = Array.isArray(form.uri) ? form.uri.slice(1).join('/') : ''
+  return {
+    offset: record.offset,
+    timestamp: record.timestamp ?? null,
+    ms: Number.isFinite(ms) ? ms : null,
+    from: core.topic ?? null,
+    command: Array.isArray(form.command) ? form.command.join(' ') : [`${form.protocol}/${form.action}`, uri, ...(Array.isArray(form.args) ? form.args.map(String) : [])].filter(Boolean).join(' '),
+    ok: !('error' in form),
+    error: form.error ?? null
+  }
+}
+
+// form: { query: { at, filter } }: the mrepo's position from the root, a
+// filter on its records. Its links relative to its section: right
+// wherever it is mounted.
 export async function page (exec, { query = {} } = {}) {
-  const at = query.at ?? DEFAULT
+  const at = query.at ? String(query.at) : DEFAULT
   if (!AT.test(at)) throw new Error(`not an mrepo's position: ${at}`)
-  const node = query.node ? String(query.node) : null
-  if (node !== null && !NODE.test(node)) throw new Error(`not a node's unique URI: ${node}`)
-  const limit = query.limit === undefined ? LIMIT : Number(query.limit)
-  if (!Number.isInteger(limit) || limit < 1 || limit > 10000) throw new Error(`not a limit: ${query.limit} (1 to 10000 records)`)
-  // an address: the master when not the default, the node, the limit
-  const address = ({ n = node, l = limit } = {}) => {
-    const q = [...(at === DEFAULT ? [] : [`at=${encodeURIComponent(at)}`]), ...(n ? [`node=${encodeURIComponent(n)}`] : []), ...(l === LIMIT ? [] : [`limit=${l}`])]
+  const filter = query.filter ? String(query.filter).trim() : ''
+  if (filter && !FILTER.test(filter)) throw new Error(`not a filter: ${filter} (as after done/*: [value/value/protocol='crud'])`)
+  const address = (a = at) => {
+    const q = [...(a === DEFAULT ? [] : [`at=${encodeURIComponent(a)}`]), ...(filter ? [`filter=${encodeURIComponent(filter)}`] : [])]
     return `./${q.length ? `?${q.join('&')}` : ''}`
   }
-  const command = ['log/read', '.', ...(node ? [node] : []), String(limit)]
-  // the nodes whose logs the master holds: asked without a filter, so the
-  // drop-down names every one
-  let nodes = []
+  // the request log is the log: read where it is, a topic, the latest first
+  const command = ['crud/read', `done/*${filter}`, '--flags', 'layer=request']
+  let mrepos = []
   let records = []
   let error = null
   try {
-    const [all, shown] = await Promise.all([node ? exec.data(at, ['log/read', '.', '1']) : null, exec.data(at, command)])
-    nodes = (all ?? shown).nodes ?? []
-    records = shown.records ?? []
+    const [all, read] = await Promise.all([exec.data('.', ['haicc/mrepos']), exec.data(at, command)])
+    mrepos = (all ?? []).filter(m => typeof m.position === 'string')
+    records = (read ?? []).map(n => rowOf(n.value)).filter(Boolean)
   } catch (err) { error = err.message }
-  exec.log('verbose', 'page', { at, node, limit, records: records.length, error })
+  exec.log('verbose', 'page', { at, filter, records: records.length, error })
+  const known = mrepos.some(m => m.position === at)
   return draw({
-    title: `log · ${node ?? at}`,
+    title: `log · ${at}`,
     at,
-    filter: [{ label: `every node (${nodes.length})`, value: address({ n: null }), selected: node === null }, ...nodes.map(n => ({ label: `${n.uri} (${n.length})`, value: address({ n: n.uri }), selected: n.uri === node }))],
+    filter,
+    mrepos: [...(known || at === DEFAULT ? [] : [{ label: at, value: address(), selected: true }]), { label: '. (the root)', value: address(DEFAULT), selected: at === DEFAULT }, ...mrepos.filter(m => m.position !== DEFAULT).map(m => ({ label: `${m.position} (${m.uri})`, value: address(m.position), selected: m.position === at }))],
     refresh: address(),
-    // the newest first: what one looks for
-    records: [...records].reverse(),
+    records,
     error,
-    footer: `haicc ${at} ${command.join(' ')}`
+    footer: `haicc ${at} ${command.map(p => (/[\s*'"[\]]/.test(p) ? JSON.stringify(p) : p)).join(' ')}`
   })
 }

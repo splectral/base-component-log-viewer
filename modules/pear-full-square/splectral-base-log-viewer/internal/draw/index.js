@@ -1,5 +1,5 @@
-// draw: the log page as HTML, whole: the node filter, the records a table
-// (README.md beside it).
+// draw: the log page as HTML, whole: the mrepo chosen, the filter, the
+// records a table (README.md beside it).
 
 export const STYLE = `
 :root{--bg:#fff;--fg:#1d1f23;--muted:#5f6670;--line:#e3e6ea;--accent:#2457c5;--code:#f4f5f7;--bad:#c0392b}
@@ -25,22 +25,22 @@ export const escape = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'
 // base (its section), as a link is followed.
 const GO = 'function go(s){if(s.value)top.location.href=new URL(s.value,document.baseURI).href}'
 
-// input: { title, at, filter: [{ label, value, selected }], refresh,
-// records: [{ node, timestamp, command, ok, error, ms }], error, footer }
+// input: { title, at, filter, mrepos: [{ label, value, selected }], refresh,
+// records: [{ timestamp, from, command, ok, error, ms }], error, footer }
 // -> HTML
 export function draw (input) {
   if (!input || typeof input !== 'object') throw new Error('missing argument: page ({ title, records })')
   const records = Array.isArray(input.records) ? input.records : []
-  const filter = Array.isArray(input.filter) && input.filter.length
-    ? `<select aria-label="node" onchange="go(this)">${input.filter.map(o => `<option value="${escape(o.value)}"${o.selected ? ' selected' : ''}>${escape(o.label)}</option>`).join('')}</select>`
+  const mrepos = Array.isArray(input.mrepos) && input.mrepos.length
+    ? `<select aria-label="mrepo" onchange="go(this)">${input.mrepos.map(o => `<option value="${escape(o.value)}"${o.selected ? ' selected' : ''}>${escape(o.label)}</option>`).join('')}</select>`
     : ''
-  // the master read: its position from the root, changed by a plain form
-  const at = `<form class="at" action="./"><input name="at" value="${escape(input.at ?? '')}" aria-label="the master's position, as typed after haicc" autocomplete="off" spellcheck="false"></form>`
+  // the filter on its records, changed by a plain form: the mrepo kept
+  const at = `<form class="at" action="./"><input type="hidden" name="at" value="${escape(input.at ?? '')}"><input name="filter" value="${escape(input.filter ?? '')}" placeholder="[value/value/protocol='crud']" aria-label="a filter on the records, as written after done/*" autocomplete="off" spellcheck="false"></form>`
   const refresh = input.refresh ? `<a href="${escape(input.refresh)}">refresh</a>` : ''
   const error = input.error ? `<p class="error">${escape(input.error)}</p>` : ''
-  const rows = records.map(r => `<tr${r.ok === false ? ' class="failed"' : ''}><td>${escape(String(r.timestamp ?? '').replace('T', ' ').replace(/Z$/, ''))}</td><td>${escape(r.node ?? '')}</td><td class="cmd">${escape(r.command ?? '')}${r.error ? `<div class="err">${escape(r.error)}</div>` : ''}</td><td class="ms">${r.ms === null || r.ms === undefined ? '' : escape(r.ms)}</td></tr>`).join('')
+  const rows = records.map(r => `<tr${r.ok === false ? ' class="failed"' : ''}><td>${escape(String(r.timestamp ?? '').replace('T', ' ').replace(/Z$/, ''))}</td><td>${escape(r.from ?? '')}</td><td class="cmd">${escape(r.command ?? '')}${r.error ? `<div class="err">${escape(r.error)}</div>` : ''}</td><td class="ms">${r.ms === null || r.ms === undefined ? '' : escape(r.ms)}</td></tr>`).join('')
   const table = records.length
-    ? `<table><thead><tr><th>completed</th><th>node</th><th>command</th><th>ms</th></tr></thead><tbody>${rows}</tbody></table>`
+    ? `<table><thead><tr><th>completed</th><th>asked by</th><th>command</th><th>ms</th></tr></thead><tbody>${rows}</tbody></table>`
     : (input.error ? '' : '<p class="none">No records.</p>')
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(input.title ?? 'log')}</title><style>${STYLE}</style><script>${GO}</script></head><body><main><div class="top">${filter}${at}${refresh}</div>${error}${table}${input.footer ? `<footer>${escape(input.footer)}</footer>` : ''}</main></body></html>`
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(input.title ?? 'log')}</title><style>${STYLE}</style><script>${GO}</script></head><body><main><div class="top">${mrepos}${at}${refresh}</div>${error}${table}${input.footer ? `<footer>${escape(input.footer)}</footer>` : ''}</main></body></html>`
 }

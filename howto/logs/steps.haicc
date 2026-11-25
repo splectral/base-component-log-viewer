@@ -1,6 +1,5 @@
-# logs: a swarm's logs in a browser, as its master holds them.
-# The scene: the swarm package's how-to swarm, at its end; Splectral
-# deployed and in service, at splectral.
+# logs: an mrepo's requests in a browser, its own request log.
+# The scene: a host; Splectral deployed and in service, at splectral.
 # step: the component's first half: a plain service-managed mrepo
 splectral boot/deploy log haiccing/base-package-service
 # expect: "deployed":"log"
@@ -13,5 +12,5 @@ splectral/log service/initialise
 splectral/log service/start
 # expect: "state":"started"
 # step: what its page shows, as a command
-host/swarms/swarm-1/master log/read
-# expect: "node":"swarm-1/master"
+host crud/read "done/*" --flags layer=request
+# expect: "uri":["request","done/*[@offset=

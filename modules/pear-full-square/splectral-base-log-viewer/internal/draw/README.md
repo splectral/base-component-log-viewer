@@ -1,12 +1,12 @@
 # draw
 
-Draws the log page as HTML, whole: the node filter, the master's position, the records a table.
+Draws the log page as HTML, whole: the mrepo chosen, the filter, the records a table.
 
 ## Signature
 
-`draw(input)`: `{ title, at, filter: [{ label, value, selected }],
-refresh, records: [{ node, timestamp, command, ok, error, ms }], error,
-footer }`.
+`draw(input)`: `{ title, at, filter, mrepos: [{ label, value, selected
+}], refresh, records: [{ timestamp, from, command, ok, error, ms }],
+error, footer }`.
 
 ## Returns
 
