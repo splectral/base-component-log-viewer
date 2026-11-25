@@ -1,5 +1,7 @@
 # logs: an mrepo's requests in a browser, its own request log.
-# The scene: a host; Splectral deployed and in service, at splectral.
+# scene: a host; Splectral deployed and in service, at splectral
+. boot/deploy host haiccing/base-component-haicc
+. boot/deploy splectral haiccing/base-package-splectral
 # step: the component's first half: a plain service-managed mrepo
 splectral boot/deploy log haiccing/base-package-service
 # expect: "deployed":"log"
@@ -14,3 +16,6 @@ splectral/log service/start
 # step: what its page shows, as a command
 host crud/read "done/*" --flags layer=request
 # expect: "uri":["request","done/*[@offset=
+# step: torn down through the platform, as any mrepo (Splectral reads no links of its own: its components are its to tear down)
+splectral boot/teardown log
+# expect: "tornDown":"log"
